@@ -65,8 +65,9 @@ cp -r 被拷贝目录 新建目录 ; 拷贝目录
 - 创建同一目录的多个目录只需要加空格隔开即可  例 ： mkdir  a  b  c
 
 - cp  被拷贝文件名  新建文件名  ;   复制一个新的文件
-  - cp  -r  被拷贝目录  新建目录  ;   拷贝目录
-
+  
+- cp  -r  被拷贝目录  新建目录  ;   拷贝目录
+  
 - touch 文件名加后缀 ;   创建一个指定文件名的空的文件
 
   - 创建同一目录的多个文件只需要加空格隔开即可   例 : touch  1.js  2.js  3.js
@@ -77,9 +78,103 @@ cp -r 被拷贝目录 新建目录 ; 拷贝目录
 
   
 
+### 文件命令
+
+***
+
+复杂命令：
+
+```
+mv oldfilename newfilename
+git add newfilename
+git rm oldfilename
+```
+
+简单命令：
+
+```
+git  mv  [old file name]  [new file name]
+git commit -m 'some information'
+
+```
+
+### git log 查看版本历史
+
+***
+
+```
+git log --all 查看所有分支的历史
+git log --all --graph 查看图形化的 log 地址
+git log --oneline 查看单行的简洁历史。
+git log --oneline -n4 查看最近的4条简洁历史。
+git log --oneline --all -n4 --graph 查看所有分支最近4条单行的图形化历史。
+git help --web log 跳转到git log 的帮助文档网页
+
+```
+
+```
+git branch -v 查看本地有多少分支
+```
 
 
 
+### 图形界面工具来查看版本历史
+
+***
+
+```
+gitk
+```
 
 
+
+### 探秘.git目录
+
+***
+
+查看`.git`文件夹下的内容：
+
+```
+ls .git/ -al
+```
+
+如下
+
+```
+drwxr-xr-x 1 sunchanghui 197121   0 Sep 11 01:25 ./
+drwxr-xr-x 1 sunchanghui 197121   0 Sep 11 00:53 ../
+-rw-r--r-- 1 sunchanghui 197121  16 Sep 11 00:53 COMMIT_EDITMSG
+-rw-r--r-- 1 sunchanghui 197121  23 Sep 10 23:57 HEAD
+-rw-r--r-- 1 sunchanghui 197121 162 Sep 11 00:02 config
+-rw-r--r-- 1 sunchanghui 197121  73 Sep 10 23:57 description
+-rw-r--r-- 1 sunchanghui 197121 175 Sep 11 01:25 gitk.cache
+drwxr-xr-x 1 sunchanghui 197121   0 Sep 10 23:57 hooks/
+-rw-r--r-- 1 sunchanghui 197121 137 Sep 11 00:53 index
+drwxr-xr-x 1 sunchanghui 197121   0 Sep 10 23:57 info/
+drwxr-xr-x 1 sunchanghui 197121   0 Sep 11 00:33 logs/
+drwxr-xr-x 1 sunchanghui 197121   0 Sep 11 00:53 objects/
+drwxr-xr-x 1 sunchanghui 197121   0 Sep 10 23:57 refs/
+```
+
+```
+cat命令主要用来查看文件内容，创建文件，文件合并，追加文件内容等功能。
+cat HEAD 查看HEAD文件的内容
+git cat-file 命令 显示版本库对象的内容、类型及大小信息。
+git cat-file -t b44dd71d62a5a8ed3 显示版本库对象的类型
+git cat-file -s b44dd71d62a5a8ed3 显示版本库对象的大小
+git cat-file -p b44dd71d62a5a8ed3 显示版本库对象的内容
+```
+
+`.git`里几个常用的如下:
+
+```
+HEAD：指向当前的工作路径
+config：存放本地仓库（local）相关的配置信息。
+refs/heads: 存放分支
+refs/heads/master/: 指向master分支最后一次commit
+refs/tags: 存放tag，又叫里程牌 （当这次commit是具有里程碑意义的 比如项目1.0的时候 就可以打tag）
+objects：核心文件，存储文件
+```
+
+`.git/objects/` 存放所有的 git 对象，对象哈希值前 2 位作为文件夹名称，后 38 位作为对象文件名, 可通过 git cat-file -p 命令，拼接文件夹名称+文件名查看。
 
