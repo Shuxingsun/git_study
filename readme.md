@@ -178,3 +178,315 @@ objects：核心文件，存储文件
 
 `.git/objects/` 存放所有的 git 对象，对象哈希值前 2 位作为文件夹名称，后 38 位作为对象文件名, 可通过 git cat-file -p 命令，拼接文件夹名称+文件名查看。
 
+### `commit`、`tree`和`blob`三个对象之间的关系
+
+***
+
+![](./images/img1.jpg)
+
+```
+commit: 提交时的镜像
+tree: 文件夹
+blob: 文件
+```
+
+**【同学问题】** 每次commit，git 都会将当前项目的所有文件夹及文件快照保存到objects目录，如果项目文件比较大，不断迭代，commit无数次后，objects目录中文件大小是不是会变得无限大？
+**【老师解答】** Git对于内容相同的文件只会存一个blob，不同的commit的区别是commit、tree和有差异的blob，多数未变更的文件对应的blob都是相同的，这么设计对于版本管理系统来说可以省很多存储空间。其次，Git还有增量存储的机制，我估计是对于差异很小的blob设计的吧。
+
+
+
+###  分离头指针情况下的注意事项
+
+***
+
+detached HEAD
+
+### 进一步理解`HEAD`和`Branch`
+
+***
+
+```
+git checkout -b new_branch [具体分支 或 commit] 创建新分支并切换到新分支
+git diff HEAD HEAD~1 比较最近两次提交
+git diff HEAD HEAD~2 比较最近和倒数第三次提交
+git diff HEAD HEAD^  比较最近两次提交
+git diff HEAD HEAD^^ 比较最近和倒数第三次提交
+```
+
+### 删除不需要的分支
+
+***
+
+查看分支
+
+```
+git branch -av
+```
+
+删除分支
+
+```
+git branch -d [branch name]  #删除
+git branch -D [branch name]  #强制删除
+```
+
+### 修改最新commit的message
+
+***
+
+```
+git commit --amend  对最近一次的commit信息进行修改
+```
+
+### 修改老旧commit的message（变基，基于下面进行）
+
+***
+
+```
+git log
+git rebase -i [commit的父亲信息（文件下面的那个commit）]
+第一个pick->r
+再次编辑,提示信息
+```
+
+### 多个连续的commit合成一个
+
+***
+
+```
+git rebase -i [最下面合并的commit的信息]
+将除合并需要的第一个commit之外的其它pick->s,保存：wq
+再次编辑提示信息
+```
+
+### 多个间隔的commit合成一个
+
+***
+
+```
+git rebase -i [老祖宗的commit]
+复制放在一起挨着，pick->s,删除那个被复制的
+git rebase --continue
+```
+
+### 暂存区和head作比较,差异
+
+***
+
+```
+git diff -cached
+```
+
+### 工作区和暂存区的差异
+
+***
+
+```
+git diff
+```
+
+### 将暂存区恢复成HEAD
+
+***
+
+```
+git reset HEAD
+```
+
+### 将工作区的文件恢复成HEAD
+
+***
+
+如果工作区的某个文件被改乱了，但还没有提交，可以用`git checkout`命令找回本次修改之前的文件。
+
+```
+git checkout -- [filename]
+```
+
+它的原理是先找暂存区，如果该文件有暂存的版本，则恢复该版本，否则恢复上一次提交的版本。
+
+注意，工作区的文件变化一旦被撤销，就无法找回了。
+
+### 取消暂存区部分文件
+
+***
+
+```
+git reset HEAD -- [filename]
+```
+
+### 消除最近几次的提交
+
+***
+
+### 撤销提交
+
+一种常见的场景是，提交代码以后，你突然意识到这个提交有问题，应该撤销掉，这时执行下面的命令就可以了。
+
+```
+git revert HEAD
+```
+
+上面命令的原理是，在当前提交后面，新增一次提交，抵消掉上一次提交导致的所有变化。它不会改变过去的历史，所以是首选方式，没有任何丢失代码的风险。
+
+git revert 命令只能抵消上一个提交，如果想抵消多个提交，必须在命令行依次指定这些提交。比如，抵消前两个提交，要像下面这样写。
+
+```
+git revert [倒数第一个提交] [倒数第二个提交]
+```
+
+`git revert`命令还有两个参数。
+
+- **--no-edit**：执行时不打开默认编辑器，直接使用 Git 自动生成的提交信息。
+- **--no-commit**：只抵消暂存区和工作区的文件变化，不产生新的提交。
+
+### 丢弃提交
+
+如果希望以前的提交在历史中彻底消失，而不是被抵消掉，可以使用`git reset`命令，丢弃掉某个提交之后的所有提交。
+
+```
+git reset [last good SHA]
+```
+
+`git reset`的原理是，让最新提交的指针回到以前某个时点，该时点之后的提交都从历史中消失。
+
+默认情况下，`git reset`不改变工作区的文件（但会改变暂存区），--hard参数可以让工作区里面的文件也回到以前的状态。
+
+```
+git reset --hard [last good SHA]
+```
+
+执行`git reset`命令之后，如果想找回那些丢弃掉的提交，可以使用`git reflog`命令，具体做法参考这里。不过，这种做法有时效性，时间长了可能找不回来。
+
+
+
+**比较不同分支的差异**
+
+```
+git diff [分支1] [分支2] [-- 文件名]
+```
+
+
+
+### 正确删除文件
+
+***
+
+```
+git rm [filename]
+```
+
+### 紧急任务下处理
+
+***
+
+- **`git stash`**
+  保存当前工作进度，会把暂存区和工作区的改动保存起来。执行完这个命令后，在运行`git status`命令，就会发现当前是一个干净的工作区，没有任何改动。使用`git stash save 'message...'`可以添加一些注释
+- **`git stash list`**
+  显示保存进度的列表。也就意味着，git stash命令可以多次执行。
+- **`git stash pop [–index] [stash_id]`**
+  `git stash pop` 恢复最新的进度到工作区。git默认会把工作区和暂存区的改动都恢复到工作区。 `git stash pop --index` 恢复最新的进度到工作区和暂存区。（尝试将原来暂存区的改动还恢复到暂存区） `git stash pop stash@{1}`恢复指定的进度到工作区。stash_id是通过git stash list命令得到的 通过`git stash pop`命令恢复进度后，会删除当前进度。
+- **`git stash apply [–index] [stash_id]`**
+  除了不删除恢复的进度之外，其余和`git stash pop`命令一样。
+- **`git stash drop [stash_id]`**
+  删除一个存储的进度。如果不指定stash_id，则默认删除最新的存储进度。
+- **`git stash clear`**
+  删除所有存储的进度。
+
+### 远程连接github
+
+***
+
+**配置ssh密钥**
+
+一般情况下，当推送本地改动到远程仓库时，需要输 
+
+入用户名和密码。因为传输通常是通过 SSH 加密，所 
+
+以可以通过设置 SSH 密钥来省去验证账号的步骤。 
+
+首先使用下面的命令检查是否已经创建了 SSH 密钥： 
+
+```
+$ cat ~/.ssh/id_rsa.pub 
+```
+
+
+
+如果显示“No such file or directory”，就使用下面的命 
+
+令生成 SSH 密钥对，否则复制输出的值备用： 
+
+```
+$ ssh-keygen
+```
+
+一路按下 Enter 采用默认值，最后会在用户根目录创 
+
+建一个 .ssh 文件夹，其中包含两个文件，id_rsa 和 
+
+id_rsa.pub，前者是私钥，不能泄露出去，后者是公 
+
+钥，用于认证身份，就是我们要保存到 GitHub 上的 
+
+密钥值。再次使用前面提到的命令获得文件内容： 
+
+```
+$ cat ~/.ssh/id_rsa.pub ssh-rsa AAAAB3Nza...省略 N 个字符...3aph book@greyli
+```
+
+选中并复制输出的内容，访问 GitHub 的 SSH 设置页 
+
+面（导航栏头像 - Settings - SSH and GPG keys）， 
+
+点击 New SSH key 按钮，将复制的内容粘贴到 Key 
+
+输入框里，再填一个标题，比如“My PC”，最后点击 
+
+“Add SSH key”按钮保存。
+
+**创建远程仓库**
+
+访问新建仓库页面（导航栏“+” - New repository）， 
+
+在“Repository name”处填写仓库名称，这里填 
+
+“watchlist”即可，接着选择仓库类型（公开或私有）等 
+
+选项，最后点击“Create repository”按钮创建仓库。 
+
+因为我们已经提前创建了本地仓库，所以需要指定仓 
+
+库的远程仓库地址（如果还没有创建，则可以直接将 
+
+远程仓库克隆到本地）：
+
+```
+$ git remote add origin git@github.com:greyli/watchlist.git # 注意更换地址 中的用户名
+```
+
+这会为本地仓库关联一个名为“origin”的远程仓库，注 
+
+意将仓库地址中的**“greyli”**换成你的 **GitHub** 用户 
+
+名。
+
+
+
+**提交到远程仓库**
+
+```
+$ git add .
+$ git commit -m "I'm ready!"
+$ git push -u origin master # 如果你没有把仓库托管到 GitHub，则跳过这条命令，后面章节亦同
+```
+
+
+
+**统计仓库代码**
+
+```
+git log --author='shuxing' --since='2021-9-1' --until='2021-9-11' --pretty=tformat: --numstat | grep '.' | awk '{ add += $1; subs += $2; loc += $1 - $2 } END { printf "added lines: %s, removed lines: %s, total lines: %s\n", add, subs, loc }' -
+
+```
+
